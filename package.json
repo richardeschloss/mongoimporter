@@ -1,0 +1,23 @@
+{
+  "name": "mongoimporter",
+  "version": "1.0.0",
+  "description": "Mongo importer, as a library. Existing binaries are cool, as well as wrappers, but this library is designed to be more flexible. Tons and tons of files laying around? You may want to get that all into a db so you can do some magical shit with it!",
+  "main": "src/index.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "mocha"
+  },
+  "keywords": [
+    "mongo",
+    "importer"
+  ],
+  "author": "Richard Schloss",
+  "license": "ISC",
+  "dependencies": {
+    "assert": "^1.4.1",
+    "csv": "^5.0.0",
+    "mongodb": "^3.1.10"
+  }
+}
