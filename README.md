@@ -1,5 +1,5 @@
 # mongoimporter
-Import csv and json files into mongo DB. The existing mongoimport binary is great, this project is a library to be a bit more flexible for programmatic use.
+Import multiple files into mongo DB. The existing mongoimport binary is great, but this is a flexible library built for programmatic use. Currently supported filetypes: csv, json.
 
 This library can import multiple files or an entire directory at once. If importing the entire directory, it will only import files in that directory (not subdirectories).
 

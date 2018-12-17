@@ -1,7 +1,7 @@
 {
   "name": "mongoimporter",
-  "version": "1.0.1",
-  "description": "Mongo importer, as a library. Existing binaries are cool, as well as wrappers, but this library is designed to be more flexible. Tons and tons of files laying around? You may want to get that all into a db so you can do some magical shit with it!",
+  "version": "1.0.2",
+  "description": "Import multiple files into mongo DB. A flexible library built for programmatic use.",
   "main": "src/index.js",
   "directories": {
     "test": "test"
