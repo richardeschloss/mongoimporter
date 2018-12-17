@@ -6,8 +6,8 @@ This library can import multiple files or an entire directory at once. If import
 The destination collection names can either be explicitly stated or inferred from each filename using the useFilename option. See test/index.js for examples.
 
 # Examples
-Importing multiple files (mixed filetypes, csv or json) into mongodb:
-```
+1. Importing multiple files (mixed filetypes, csv or json) into mongodb:
+```javascript
 /* Requires */
 const MongoImporter = require('mongoimporter')
 
@@ -37,6 +37,38 @@ mongoImporter
     })
     .then((filesImported) => {
         console.log('filesImported', filesImported)
+        mongoImporter.disconnect(); // disconnect from the db
+    })
+})
+```
+
+2. Import a directory into mongodb. Suppose the directory "datasets" consists of the files from example 1. Then the code would be simplified to this:
+```javascript
+/* Requires */
+const MongoImporter = require('mongoimporter')
+
+/* Instantiate the mongoImporter */
+const mongoImporter = new MongoImporter({
+    dbName: 'test',
+    dbUser: 'test1',
+    dbPass: 'test1'
+})
+
+var dir = 'datasets';
+
+mongoImporter
+.connect() // Connect to the db first
+.then(() => {
+    mongoImporter.importDir(dir, { // import directory
+        csvDelimiter: ',', // Delimiter to use for csv files
+        collectionName: dir, // Setting the collectionName to directory name explicitly (but it can be any string you want)
+        headerline: true // Use the headerline as fields
+    })
+    .then(() => {
+        console.log('dirImported') // If we got here, we succeeded
+        mongoImporter.disconnect(); // disconnect from the db
+    }, (err) => {
+        console.log('dirImport failed', err) // If we got here, we failed...read the err.
         mongoImporter.disconnect(); // disconnect from the db
     })
 })
