@@ -74,4 +74,4 @@ mongoImporter
 })
 ```
 
-(This is still in it's early stage...Tests pass and this code works, but patience requested for perhaps more advanced tasks.)
+(This is still in it's early stage...Tests pass and this code works, but patience requested for more advanced tasks.)
