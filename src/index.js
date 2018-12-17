@@ -1,8 +1,10 @@
 'use strict';
 
 /* Requires */
+const async = require('async');
 const assert = require('assert');
 const csvParse = require('csv-parse');
+const debug = require('debug')('mongoimporter')
 const fs = require('fs');
 const mongodb = require('mongodb');
 const path = require('path');
@@ -11,78 +13,155 @@ const path = require('path');
 const MongoClient = mongodb.MongoClient;
 
 /* Class */
-class Importer{
+class MongoImporter{
     constructor(cfg){
         this.dbHost = cfg.dbHost || 'localhost';
         this.dbPort = cfg.dbPort || '27017';
         this.dbName = cfg.dbName || 'test';
-        this.collections = cfg.collections || ['test'];
-
-        this.headerline = cfg.headerline;
+        this.dbUser = cfg.dbUser;
+        this.dbPass = cfg.dbPass;
+        this.dbConnected = false;
     }
 
     connect(){
         return new Promise((resolve, reject) => {
-            this.dbUrl = `mongodb://${this.dbHost}:${this.dbPort}/${this.dbName}`;
-            MongoClient.connect(this.url, { useNewUrlParser: true })
+            this.dbUrl = `mongodb://${this.dbUser}:${this.dbPass}@${this.dbHost}:${this.dbPort}/${this.dbName}`;
+            MongoClient.connect(this.dbUrl, { useNewUrlParser: true })
             .then((client) => {
-                console.log('DB connected to', this.collectionName)
+                console.log('DB connected to', this.dbName)
+                this.dbConnected = true;
                 this.client = client;
                 this.db = client.db(this.dbName);
                 resolve();
+            }, (err) => {
+                console.log('Error connecting to database', err)
+                reject(err);
             })
         })
     }
 
+    disconnect(){
+        this.client.close();
+    }
+
     import_csv(file, options){
-        console.log('import_csv', file, options)
+        assert( options.headerline && !options.fields, 'need to specify headerline or fields' )
+        assert( options.collectionName, 'need to specify a collection to import to')
+        console.log('import_csv', file, 'options=', options)
         const csvParser = csvParse({
-            delimiter: options.csvDelimiter || ','
+            delimiter: options.csvDelimiter || ',',
+            columns: options.headerline || options.fields,
+            relax: true
         })
-        fs.createReadStream(file, {encoding: 'utf-8'})
-        .pipe(csvParser)
-        .on('data', (data) => {
-            console.log('data', data)
-        })
-    }
+        var docs = [], user = this.dbUser, db = this.db;
 
-    import_csvX(file, options){
-        assert( this.headerline && !this.fields, 'need to specify headerline or fields' )
-        var eolChar = options.eolChar || '\n';
-        var csvDelimiter = options.csvDelimiter || ',';
-        fs.readFile(file, 'utf-8', (err, resp) => {
-            if( this.headerline ){
-                var lines = resp.split(eolChar);
-                var fields = lines[0].split(csvDelimiter);
-                console.log('fields', fields)
-                var rows = lines.slice(1);
-                console.log('rows', rows)
-                var docs = [];
-                rows.forEach((row, rowIdx) => {
-                    // console.log('row', row.split(csvDelimiter))
-                    var doc = {};
-                    row.split(csvDelimiter).forEach((cell, colIdx) => {
-                        // console.log('cell', cell)
-                        doc[fields[colIdx]] = cell;
-                    })
-                    docs.push(doc)
-                    // console.log('doc', doc)
+        return new Promise((resolve, reject) => {
+            fs.createReadStream(file, {encoding: 'utf-8'})
+            .pipe(csvParser)
+            .on('data', (data) => {
+                var doc = data;
+                if( options.attachUser ){
+                    doc.user = user;
+                }
+                docs.push(doc);
+            })
+            .on('end', () => {
+                var collectionName;
+                if( typeof options.collectionName == 'object' && options.collectionName.useFilename ){
+                    collectionName = options.fileName;
+                } else {
+                    collectionName = options.collectionName;
+                }
+                db.collection(collectionName).insertMany(docs, (err, resp) => {
+                    if( err ){
+                        console.log('docs import err', err)
+                        reject(err);
+                    } else {
+                        console.log(resp.insertedCount, 'docs inserted')
+                        resolve();
+                    }
                 })
-
-                // console.log('rows', rows)
-            }
-        })
+            })
+        });
     }
 
-    importFile(file, options){
-        console.log('importFile', file, options)
-        assert(file, 'Need to specify a file')
-        var pathInfo = path.parse(file);
-        pathInfo.fileType = options.fileType || pathInfo.ext.slice(1);
-        console.log('pathInfo', pathInfo)
-        assert(this['import_' + pathInfo.fileType], 'fileType ' + pathInfo.fileType + ' unsupported (for now)')
-        this['import_' + pathInfo.fileType](file, options)
+    import_json(file, options){
+        console.log('import_json', file, options)
+        assert( options.collectionName, 'need to specify a collection to import to')
+        var docs = [], user = this.dbUser, db = this.db;
+        return new Promise((resolve, reject) => {
+            fs.readFile(file, 'utf-8', (err, resp) => {
+                if( err ){
+                    reject(err);
+                    return;
+                }
+
+                var collectionName;
+                if( typeof options.collectionName == 'object' && options.collectionName.useFilename ){
+                    collectionName = options.fileName;
+                } else {
+                    collectionName = options.collectionName;
+                }
+
+                var json = JSON.parse(resp);
+                if( json.__proto__.constructor.name == 'Object' ){
+                    // insert doc
+                    var doc = json;
+                    if( options.attachUser ){
+                        doc.user = user;
+                    }
+                    docs.push(doc);
+                } else if( json.__proto__.constructor.name == 'Array' ){
+                    // insertMany docs...
+                    json.forEach((entry) => {
+                        var doc = entry;
+                        if( options.attachUser ){
+                            doc.user = user;
+                        }
+                        docs.push(doc);
+                    })
+                }
+
+                db.collection(collectionName).insertMany(docs, (err, resp) => {
+                    if( err ){
+                        console.log('docs import err', err)
+                        reject(err);
+                    } else {
+                        console.log(resp.insertedCount, 'docs inserted')
+                        resolve();
+                    }
+                })
+            })
+        });
+
+    }
+
+    importFiles(files, options){
+        console.log('importFiles', files, options)
+        assert(files && files.length > 0, 'Need to specify at least one file')
+        var self = this;
+        return new Promise(function(resolve, reject) {
+            async.each(files, (file, callback) => {
+                var pathInfo = path.parse(file);
+                pathInfo.fileType = options.fileType || pathInfo.ext.slice(1);
+                // options.fileName = pathInfo.name;
+                assert(self['import_' + pathInfo.fileType], 'fileType ' + pathInfo.fileType + ' unsupported (for now)')
+                self['import_' + pathInfo.fileType](file, {
+                    csvDelimiter: options.csvDelimiter,
+                    collectionName: options.collectionName,
+                    headerline: options.headerline,
+                    fileName: pathInfo.name
+                })
+                .finally(callback)
+            }, (err) => {
+                if( err ){
+                    reject(err);
+                } else {
+                    resolve(files.length);
+                }
+            })
+        });
     }
 }
 
-module.exports = Importer;
+module.exports = MongoImporter;

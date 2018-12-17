@@ -17,7 +17,12 @@
   "license": "ISC",
   "dependencies": {
     "assert": "^1.4.1",
+    "async": "^2.6.1",
     "csv": "^5.0.0",
     "mongodb": "^3.1.10"
+  },
+  "devDependencies": {
+    "debug": "^4.1.0",
+    "mocha": "^5.2.0"
   }
 }

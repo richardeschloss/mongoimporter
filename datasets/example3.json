@@ -1,0 +1,9 @@
+{
+    "firstName": "John",
+    "lastName": "Smith",
+    "skills": [
+        "Flying High",
+        "Eating apples quickly",
+        "Jump rope"
+    ]
+}
