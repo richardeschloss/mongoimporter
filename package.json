@@ -6,6 +6,10 @@
   "directories": {
     "test": "test"
   },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/richardeschloss/mongoimporter.git"
+  },
   "scripts": {
     "test": "mocha"
   },
@@ -14,7 +18,7 @@
     "importer"
   ],
   "author": "Richard Schloss",
-  "license": "ISC",
+  "license": "MIT",
   "dependencies": {
     "assert": "^1.4.1",
     "async": "^2.6.1",
