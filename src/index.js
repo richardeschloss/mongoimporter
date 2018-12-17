@@ -45,9 +45,9 @@ class MongoImporter{
     }
 
     import_csv(file, options){
+        debug('import_csv', file, 'options=', options)
         assert( options.headerline && !options.fields, 'need to specify headerline or fields' )
         assert( options.collectionName, 'need to specify a collection to import to')
-        console.log('import_csv', file, 'options=', options)
         const csvParser = csvParse({
             delimiter: options.csvDelimiter || ',',
             columns: options.headerline || options.fields,
@@ -77,7 +77,7 @@ class MongoImporter{
                         console.log('docs import err', err)
                         reject(err);
                     } else {
-                        console.log(resp.insertedCount, 'docs inserted')
+                        console.log(resp.insertedCount, 'docs inserted into', collectionName, 'from', file)
                         resolve();
                     }
                 })
@@ -86,7 +86,7 @@ class MongoImporter{
     }
 
     import_json(file, options){
-        console.log('import_json', file, options)
+        debug('import_json', file, options)
         assert( options.collectionName, 'need to specify a collection to import to')
         var docs = [], user = this.dbUser, db = this.db;
         return new Promise((resolve, reject) => {
@@ -127,7 +127,7 @@ class MongoImporter{
                         console.log('docs import err', err)
                         reject(err);
                     } else {
-                        console.log(resp.insertedCount, 'docs inserted')
+                        console.log(resp.insertedCount, 'docs inserted into', collectionName, 'from', file)
                         resolve();
                     }
                 })
@@ -137,14 +137,13 @@ class MongoImporter{
     }
 
     importFiles(files, options){
-        console.log('importFiles', files, options)
+        debug('importFiles', files, options)
         assert(files && files.length > 0, 'Need to specify at least one file')
         var self = this;
         return new Promise(function(resolve, reject) {
             async.each(files, (file, callback) => {
                 var pathInfo = path.parse(file);
                 pathInfo.fileType = options.fileType || pathInfo.ext.slice(1);
-                // options.fileName = pathInfo.name;
                 assert(self['import_' + pathInfo.fileType], 'fileType ' + pathInfo.fileType + ' unsupported (for now)')
                 self['import_' + pathInfo.fileType](file, {
                     csvDelimiter: options.csvDelimiter,
@@ -159,6 +158,21 @@ class MongoImporter{
                 } else {
                     resolve(files.length);
                 }
+            })
+        });
+    }
+
+    importDir(dir, options){
+        debug('importDir', dir, options)
+        assert(dir, 'Need to specify a directory')
+        var self = this;
+        return new Promise((resolve, reject) => {
+            fs.readdir(dir, {withFileTypes: true}, (err, entries) => {
+                var files = entries
+                .filter((entry) => !entry.isDirectory())
+                .map((entry) => path.resolve(dir, entry.name))
+                self.importFiles(files, options)
+                .then(resolve, reject)
             })
         });
     }
