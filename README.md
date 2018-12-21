@@ -76,6 +76,7 @@ mongoImporter
     mongoImporter.importDir(dir, { // import directory
         csvDelimiter: ',', // Delimiter to use for csv files
         collectionName: dir, // Setting the collectionName to directory name explicitly (but it can be any string you want)
+                // You can also set this to { useDirectoryName: true } to use the directoryName as the collectionName.
         headerline: true // Use the headerline as fields
     })
     .then(() => {
