@@ -1,0 +1,41 @@
+{
+    "mongoClient": {
+        "dbName": "test",
+        "attachUser": {
+            "id": "_UniQueId432",
+            "firstName": "Mary",
+            "lastName": "Tester"
+        },
+        "connectOptions": {
+            "auth": {
+                "user": "test1",
+                "password": "test1"
+            },
+            "ssl": true,
+            "sslKey": "~/.ssl/mongoClient.key",
+            "sslCert": "~/.ssl/mongoClient.crt",
+            "sslCA": "/etc/ssl/mongo_dev/mongod.pem"
+        }
+    },
+    "importDir": "./datasets",
+    "importDir_options": {
+        "csvDelimiter": ",",
+        "collectionName": {
+            "useDirectoryName": true
+        },
+        "headerline": true
+    },
+    "importFiles": [
+        "./datasets/example1.csv",
+        "./datasets/example2.csv",
+        "./datasets/example3.json",
+        "./datasets/example4.json"
+    ],
+    "importFiles_options": {
+       "csvDelimiter": ",",
+       "collectionName": {
+           "useFilename": true
+       },
+       "headerline": true
+   }
+}

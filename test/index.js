@@ -1,59 +1,35 @@
 /* Requires */
 const assert = require('assert');
 const MongoImporter = require('../src/index');
+const testConfig = require('../testConfig.json')
 
 describe('importFiles', function(){
-    it('shall import multiple csv and json files into mongodb', function(){
-        const mongoImporter = new MongoImporter({
-            dbName: 'test',
-            dbUser: 'test1',
-            dbPass: 'test1'
-        })
-        console.log('using db', mongoImporter.dbName)
-        var files = [
-            './datasets/example1.csv',
-            './datasets/example2.csv',
-            './datasets/example3.json',
-            './datasets/example4.json',
-        ]
-        mongoImporter
-        .connect()
-        .then(() => {
-            mongoImporter.importFiles(files, {
-                csvDelimiter: ',',
-                collectionName: {
-                    useFilename: true
-                },
-                headerline: true
-            })
-            .then((filesImported) => {
-                assert(filesImported == files.length, 'not all files were imported')
-                mongoImporter.disconnect();
-            })
-        })
+    console.log('testConfig', testConfig)
+    const mongoImporter = new MongoImporter(testConfig.mongoClient)
+    it('shall successfully connect to mongodb', function(done){
+        mongoImporter.connect(testConfig.mongoClient.connectOptions)
+        .then((resp) => {
+            console.log('connected to mongoDB')
+            done();
+        }, done)
     })
 
-    it('shall import files from a specified directory into mongodb', function(){
-        const mongoImporter2 = new MongoImporter({
-            dbName: 'test',
-            dbUser: 'test1',
-            dbPass: 'test1'
-        })
-        console.log('using db', mongoImporter2.dbName)
-        var dir = 'datasets';
-        mongoImporter2
-        .connect()
-        .then(() => {
-            mongoImporter2.importDir(dir, {
-                csvDelimiter: ',',
-                collectionName: dir,
-                headerline: true
-            })
-            .then((dirImported) => {
-                mongoImporter2.disconnect();
-            }, (err) => {
-                assert(false);
-            })
-        })
+    it('shall import multiple csv and json files into mongodb', function(done){
+        mongoImporter.importFiles(testConfig.importFiles, testConfig.importFiles_options)
+        .then((resp) => {
+            done()
+        },done);
+    })
+
+    it('shall import files from a specified directory into mongodb', function(done){
+        mongoImporter.importDir(testConfig.importDir, testConfig.importDir_options)
+        .then((resp) => {
+            done()
+        },done);
+    });
+
+    it('shall successfully disconnect from mongodb', function(done){
+        mongoImporter.disconnect()
+        .then(done,done);
     });
 })

@@ -13,21 +13,32 @@ const MongoImporter = require('mongoimporter')
 
 /* Instantiate the mongoImporter */
 const mongoImporter = new MongoImporter({
-    dbName: 'test',
-    dbUser: 'test1',
-    dbPass: 'test1'
+    dbName: 'test'
+    // can also specify dbHost and/or dbPort options here. If none specified,
+    // mongo defaults will be used; 127.0.0.1:27017
 })
 
-var files = [
-    './datasets/example1.csv',
-    './datasets/example2.csv',
-    './datasets/example3.json',
-    './datasets/example4.json',
-]
-
 mongoImporter
-.connect() // Connect to the db first
+.connect({ // Connect to the db first (provide the connection options)
+    "auth": { // Auth, if any
+        "user": "test1",
+        "password": "test1"
+    },
+    // Optional: if mongodb requires SSL connection...must provide appropriate options
+    // (Here, simply supply the paths, not the buffers; this makes it easy for you to stash
+    // these options in a config.json file)
+    "ssl": true,
+    "sslKey": "~/.ssl/mongoClient.key",
+    "sslCert": "~/.ssl/mongoClient.crt",
+    "sslCA": "/etc/ssl/mongo_dev/mongod.pem"
+})
 .then(() => {
+    var files = [
+        './datasets/example1.csv',
+        './datasets/example2.csv',
+        './datasets/example3.json',
+        './datasets/example4.json',
+    ]
     mongoImporter.importFiles(files, { // import files
         csvDelimiter: ',', // Delimiter to use for csv files
         collectionName: { // Set collectionName to an object
@@ -49,15 +60,18 @@ const MongoImporter = require('mongoimporter')
 
 /* Instantiate the mongoImporter */
 const mongoImporter = new MongoImporter({
-    dbName: 'test',
-    dbUser: 'test1',
-    dbPass: 'test1'
+    dbName: 'test'
 })
 
 var dir = 'datasets';
 
 mongoImporter
-.connect() // Connect to the db first
+.connect({ // Connect to the db first (provide the connection options)
+    "auth": { // Auth, if any
+        "user": "test1",
+        "password": "test1"
+    }
+})
 .then(() => {
     mongoImporter.importDir(dir, { // import directory
         csvDelimiter: ',', // Delimiter to use for csv files
