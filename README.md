@@ -73,20 +73,20 @@ mongoImporter
     }
 })
 .then(() => {
-    mongoImporter.importDir(dir, { // import directory
+    return mongoImporter.importDir(dir, { // import directory
         csvDelimiter: ',', // Delimiter to use for csv files
         collectionName: dir, // Setting the collectionName to directory name explicitly (but it can be any string you want)
                 // You can also set this to { useDirectoryName: true } to use the directoryName as the collectionName.
         headerline: true // Use the headerline as fields
-    })
-    .then(() => {
-        console.log('dirImported') // If we got here, we succeeded
-        mongoImporter.disconnect(); // disconnect from the db
-    }, (err) => {
-        console.log('dirImport failed', err) // If we got here, we failed...read the err.
-        mongoImporter.disconnect(); // disconnect from the db
-    })
+    })    
 })
+.then((resp) => {
+    console.log('dirImported', resp) // If we got here, we succeeded; resp is count of files imported
+})
+.catch((err) => {
+    console.log('dirImport failed', err) // If we got here, we failed...read the err.
+})
+.finally(() => mongoImporter.disconnect());
 ```
 
 (This is still in it's early stage...Tests pass and this code works, but patience requested for more advanced tasks.)
