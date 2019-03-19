@@ -39,17 +39,17 @@ mongoImporter
         './datasets/example3.json',
         './datasets/example4.json',
     ]
-    mongoImporter.importFiles(files, { // import files
+    return mongoImporter.importFiles(files, { // import files
         csvDelimiter: ',', // Delimiter to use for csv files
         collectionName: { // Set collectionName to an object
             useFilename: true // The filename will be used as the collectionName
         },
         headerline: true // Use the headerline as fields
     })
-    .then((filesImported) => {
-        console.log('filesImported', filesImported)
-        mongoImporter.disconnect(); // disconnect from the db
-    })
+})
+.then((filesImported) => {
+    console.log('filesImported', filesImported) // Count of files imported
+    mongoImporter.disconnect(); // disconnect from the db
 })
 ```
 

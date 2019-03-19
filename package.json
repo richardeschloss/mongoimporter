@@ -1,6 +1,6 @@
 {
   "name": "mongoimporter",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "Import multiple files into mongo DB. A flexible library built for programmatic use.",
   "main": "src/index.js",
   "directories": {
