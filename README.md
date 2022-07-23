@@ -1,7 +1,7 @@
 # mongoimporter
-Import multiple files into mongo DB. The existing mongoimport binary is great, but this is a flexible library built for programmatic use. Currently supported filetypes: csv, json.
+Import multiple files into mongo DB. The existing mongoimport binary is great, and this is a flexible library built for programming use. Currently supported filetypes: csv, json.
 
-This library can import multiple files or an entire directory at once. If importing the entire directory, it will only import files in that directory (not subdirectories).
+This library can import multiple files or an entire directory at once. When importing the entire directory, it will only import files in that directory (not subdirectories).
 
 The destination collection names can either be explicitly stated or inferred from each filename using the useFilename option. See test/index.js for examples.
 
@@ -24,7 +24,7 @@ mongoImporter
         "user": "test1",
         "password": "test1"
     },
-    // Optional: if mongodb requires SSL connection...must provide appropriate options
+    // Optional: if mongodb requires SSL connection...then you must provide appropriate options
     // (Here, simply supply the paths, not the buffers; this makes it easy for you to stash
     // these options in a config.json file)
     "ssl": true,
